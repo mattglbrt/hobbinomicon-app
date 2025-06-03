@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { addCollectionItem } from '../lib/api';
+import { addCollectionItem, updateCollectionItem } from '../lib/api';
 
 const STATUS_OPTIONS = [
   'New in Box',
@@ -47,14 +47,25 @@ export default function AddItemForm({
     e.preventDefault();
     if (!name || !game) return;
 
-    await addCollectionItem({
-      Name: name,
-      Game: game,
-      Faction: faction,
-      Status: status,
-      Quantity: quantity,
-      Notes: notes,
-    });
+    if (initialData && initialData.id) {
+      await updateCollectionItem(initialData.id, {
+        Name: name,
+        Game: game,
+        Faction: faction,
+        Status: status,
+        Quantity: quantity,
+        Notes: notes,
+      });
+    } else {
+      await addCollectionItem({
+        Name: name,
+        Game: game,
+        Faction: faction,
+        Status: status,
+        Quantity: quantity,
+        Notes: notes,
+      });
+    }
 
     // Reset only if we're adding
     if (!initialData) {
