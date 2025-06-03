@@ -38,8 +38,14 @@ export default function Dashboard() {
 
   // Summary info
   const totalEntries = collection.length;
-  const totalModels = collection.reduce((sum, item) => sum + (item.Quantity || 0), 0);
-  const completed = collection.reduce((sum, item) => sum + (item.Completed || 0), 0);
+  const totalModels = collection.reduce(
+    (sum, item) => sum + (parseInt(item.Quantity as string, 10) || 0),
+    0,
+  );
+  const completed = collection.reduce(
+    (sum, item) => sum + (parseInt(item.Completed as string, 10) || 0),
+    0,
+  );
 
   return (
     <DashboardShell>
