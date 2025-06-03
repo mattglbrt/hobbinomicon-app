@@ -51,33 +51,27 @@ export default function AddItemForm({
     e.preventDefault();
     if (!name || !game) return;
 
+    const parsedQuantity = (() => {
+      const q = parseInt(quantity, 10);
+      return Number.isNaN(q) ? 1 : q;
+    })();
+
+    const itemData = {
+      Name: name,
+      Game: game,
+      Faction: faction,
+      Status: status,
+      Quantity: parsedQuantity,
+      Notes: notes,
+    };
+
     if (initialData && initialData.id) {
-      await updateCollectionItem(initialData.id, {
-        Name: name,
-        Game: game,
-        Faction: faction,
-        Status: status,
-        Quantity: (() => {
-          const q = parseInt(quantity, 10);
-          return Number.isNaN(q) ? 1 : q;
-        })(),
-        Notes: notes,
-      });
+      await updateCollectionItem(initialData.id, itemData);
     } else {
-      await addCollectionItem({
-        Name: name,
-        Game: game,
-        Faction: faction,
-        Status: status,
-        Quantity: (() => {
-          const q = parseInt(quantity, 10);
-          return Number.isNaN(q) ? 1 : q;
-        })(),
-        Notes: notes,
-      });
+      await addCollectionItem(itemData);
     }
 
-    // Reset only if we're adding
+    // Reset form only for new items
     if (!initialData) {
       setName('');
       setGame('');
