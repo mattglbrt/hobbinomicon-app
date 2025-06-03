@@ -12,16 +12,16 @@ import {
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { ReactNode } from 'react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: true },
-  { name: 'Projects', href: '#', current: false },
-  { name: 'Game Finder', href: '#', current: false },
 ];
+
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
   { name: 'Settings', href: '#' },
-  { name: 'Sign out', href: '#' },
+  { name: 'Sign out', href: '#', onClick: () => signOut() },
 ];
 
 function classNames(...classes: string[]) {
@@ -29,11 +29,8 @@ function classNames(...classes: string[]) {
 }
 
 export default function DashboardShell({ children }: { children: ReactNode }) {
-  const user = {
-    name: 'Hobbyist',
-    email: 'hobby@example.com',
-    imageUrl: 'https://i.pravatar.cc/100?img=68',
-  };
+  const { data: session } = useSession();
+  const user = session?.user;
 
   return (
     <div className="min-h-full">
@@ -78,26 +75,39 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
                     <span className="sr-only">View notifications</span>
                     <BellIcon className="h-6 w-6" />
                   </button>
-                  <Menu as="div" className="relative ml-3">
-                    <MenuButton className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                      <Image
-                        className="h-8 w-8 rounded-full"
-                        src={user.imageUrl}
-                        alt=""
-                        width={32}
-                        height={32}
-                      />
-                    </MenuButton>
-                    <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      {userNavigation.map((item) => (
-                        <MenuItem key={item.name}>
-                          <a href={item.href} className="block px-4 py-2 text-sm text-gray-700">
-                            {item.name}
-                          </a>
-                        </MenuItem>
-                      ))}
-                    </MenuItems>
-                  </Menu>
+                  {user ? (
+                    <Menu as="div" className="relative ml-3">
+                      <MenuButton className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                        <Image
+                          className="h-8 w-8 rounded-full"
+                          src={user?.image ?? ''}
+                          alt=""
+                          width={32}
+                          height={32}
+                        />
+                      </MenuButton>
+                      <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {userNavigation.map((item) => (
+                          <MenuItem key={item.name}>
+                            <a
+                              href={item.href}
+                              onClick={item.onClick}
+                              className="block px-4 py-2 text-sm text-gray-700"
+                            >
+                              {item.name}
+                            </a>
+                          </MenuItem>
+                        ))}
+                      </MenuItems>
+                    </Menu>
+                  ) : (
+                    <button
+                      onClick={() => signIn()}
+                      className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Sign in
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="-mr-2 flex md:hidden">
@@ -124,6 +134,23 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
                 {item.name}
               </DisclosureButton>
             ))}
+            {user ? (
+              <DisclosureButton
+                as="button"
+                onClick={() => signOut()}
+                className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              >
+                Sign out
+              </DisclosureButton>
+            ) : (
+              <DisclosureButton
+                as="button"
+                onClick={() => signIn()}
+                className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              >
+                Sign in
+              </DisclosureButton>
+            )}
           </div>
         </DisclosurePanel>
       </Disclosure>

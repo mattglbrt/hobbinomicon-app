@@ -1,13 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { fetchCollection } from '../lib/api';
 import CollectionItemCard from '../components/CollectionItemCard';
 import AddItemForm from '../components/AddItemForm';
 import Modal from '../components/Modal';
 import DashboardShell from '../components/DashboardShell';
 
+export const dynamic = 'force-dynamic';
+
 export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status !== 'loading' && !session) {
+      router.push('/login');
+    }
+  }, [session, status, router]);
   const [collection, setCollection] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -25,8 +37,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (session) {
+      loadData();
+    }
+  }, [session]);
 
   // Group by Game
   const groupedByGame = collection.reduce((acc: Record<string, any[]>, item) => {
@@ -66,20 +80,23 @@ export default function Dashboard() {
       ) : collection.length === 0 ? (
         <p className="text-gray-500">No miniatures found. Add your first one!</p>
       ) : (
-        Object.entries(groupedByGame).map(([game, items]) => (
-          <div key={game} className="mb-8">
-            <h2 className="text-xl font-bold mb-3">{game}</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((item) => (
-                <CollectionItemCard
-                  key={item.id}
-                  item={item}
-                  onItemUpdated={loadData}
-                />
-              ))}
+        Object.entries(groupedByGame).map(([game, group]) => {
+          const items = group as any[];
+          return (
+            <div key={game} className="mb-8">
+              <h2 className="text-xl font-bold mb-3">{game}</h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((item) => (
+                  <CollectionItemCard
+                    key={item.id}
+                    item={item}
+                    onItemUpdated={loadData}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
 
       {/* Add Modal */}
