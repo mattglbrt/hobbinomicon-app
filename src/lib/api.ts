@@ -33,3 +33,23 @@ export async function addCollectionItem(item: Record<string, any>) {
     throw error;
   }
 }
+
+// Update an existing collection item
+export async function updateCollectionItem(
+  id: number | string,
+  item: Record<string, any>
+) {
+  try {
+    const [base, query] = BASE_URL.split('?');
+    const url = `${base}${id}/${query ? `?${query}` : ''}`;
+    const res = await axios.patch(url, item, {
+      headers: {
+        Authorization: `Token ${API_TOKEN}`
+      }
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating collection item:', error);
+    throw error;
+  }
+}

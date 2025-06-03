@@ -5,9 +5,11 @@ import Modal from './Modal';
 import AddItemForm from './AddItemForm';
 
 function DetailRow({ label, value }: { label: string; value: any }) {
+  const displayValue =
+    value && typeof value === 'object' ? value.value ?? '—' : value;
   return (
     <div className="text-sm text-gray-700">
-      <span className="font-medium">{label}:</span> {value || '—'}
+      <span className="font-medium">{label}:</span> {displayValue || '—'}
     </div>
   );
 }

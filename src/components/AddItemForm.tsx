@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { addCollectionItem } from '../lib/api';
+import { addCollectionItem, updateCollectionItem } from '../lib/api';
 
 const STATUS_OPTIONS = [
   'New in Box',
@@ -25,7 +25,7 @@ export default function AddItemForm({
   const [game, setGame] = useState('');
   const [faction, setFaction] = useState('');
   const [status, setStatus] = useState(STATUS_OPTIONS[0]);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('1');
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
@@ -33,8 +33,16 @@ export default function AddItemForm({
       setName(initialData.Name || '');
       setGame(initialData.Game || '');
       setFaction(initialData.Faction || '');
-      setStatus(initialData.Status || STATUS_OPTIONS[0]);
-      setQuantity(initialData.Quantity || 1);
+      const statusValue =
+        initialData.Status && typeof initialData.Status === 'object'
+          ? initialData.Status.value
+          : initialData.Status;
+      setStatus(statusValue || STATUS_OPTIONS[0]);
+      setQuantity(
+        initialData.Quantity !== undefined
+          ? String(initialData.Quantity)
+          : '1'
+      );
       setNotes(initialData.Notes || '');
     }
   }, [initialData]);
@@ -43,14 +51,31 @@ export default function AddItemForm({
     e.preventDefault();
     if (!name || !game) return;
 
-    await addCollectionItem({
-      Name: name,
-      Game: game,
-      Faction: faction,
-      Status: status,
-      Quantity: quantity,
-      Notes: notes,
-    });
+    if (initialData && initialData.id) {
+      await updateCollectionItem(initialData.id, {
+        Name: name,
+        Game: game,
+        Faction: faction,
+        Status: status,
+        Quantity: (() => {
+          const q = parseInt(quantity, 10);
+          return Number.isNaN(q) ? 1 : q;
+        })(),
+        Notes: notes,
+      });
+    } else {
+      await addCollectionItem({
+        Name: name,
+        Game: game,
+        Faction: faction,
+        Status: status,
+        Quantity: (() => {
+          const q = parseInt(quantity, 10);
+          return Number.isNaN(q) ? 1 : q;
+        })(),
+        Notes: notes,
+      });
+    }
 
     // Reset only if we're adding
     if (!initialData) {
@@ -58,7 +83,7 @@ export default function AddItemForm({
       setGame('');
       setFaction('');
       setStatus(STATUS_OPTIONS[0]);
-      setQuantity(1);
+      setQuantity('1');
       setNotes('');
     }
 
@@ -102,7 +127,7 @@ export default function AddItemForm({
         className="border w-full p-2"
         placeholder="Quantity"
         value={quantity}
-        onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+        onChange={(e) => setQuantity(e.target.value)}
       />
       <textarea
         className="border w-full p-2"
