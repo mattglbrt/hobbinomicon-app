@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import { Providers } from './providers';
 
 export const metadata = {
   title: 'Hobbinomicon',
@@ -8,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full bg-gray-100">
-      <body className="h-full">{children}</body>
+      <body className="h-full">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
