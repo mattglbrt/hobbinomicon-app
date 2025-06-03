@@ -25,7 +25,7 @@ export default function AddItemForm({
   const [game, setGame] = useState('');
   const [faction, setFaction] = useState('');
   const [status, setStatus] = useState(STATUS_OPTIONS[0]);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('1');
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
@@ -38,7 +38,11 @@ export default function AddItemForm({
           ? initialData.Status.value
           : initialData.Status;
       setStatus(statusValue || STATUS_OPTIONS[0]);
-      setQuantity(initialData.Quantity || 1);
+      setQuantity(
+        initialData.Quantity !== undefined
+          ? String(initialData.Quantity)
+          : '1'
+      );
       setNotes(initialData.Notes || '');
     }
   }, [initialData]);
@@ -47,33 +51,33 @@ export default function AddItemForm({
     e.preventDefault();
     if (!name || !game) return;
 
+    const parsedQuantity = (() => {
+      const q = parseInt(quantity, 10);
+      return Number.isNaN(q) ? 1 : q;
+    })();
+
+    const itemData = {
+      Name: name,
+      Game: game,
+      Faction: faction,
+      Status: status,
+      Quantity: parsedQuantity,
+      Notes: notes,
+    };
+
     if (initialData && initialData.id) {
-      await updateCollectionItem(initialData.id, {
-        Name: name,
-        Game: game,
-        Faction: faction,
-        Status: status,
-        Quantity: quantity,
-        Notes: notes,
-      });
+      await updateCollectionItem(initialData.id, itemData);
     } else {
-      await addCollectionItem({
-        Name: name,
-        Game: game,
-        Faction: faction,
-        Status: status,
-        Quantity: quantity,
-        Notes: notes,
-      });
+      await addCollectionItem(itemData);
     }
 
-    // Reset only if we're adding
+    // Reset form only for new items
     if (!initialData) {
       setName('');
       setGame('');
       setFaction('');
       setStatus(STATUS_OPTIONS[0]);
-      setQuantity(1);
+      setQuantity('1');
       setNotes('');
     }
 
@@ -117,7 +121,7 @@ export default function AddItemForm({
         className="border w-full p-2"
         placeholder="Quantity"
         value={quantity}
-        onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+        onChange={(e) => setQuantity(e.target.value)}
       />
       <textarea
         className="border w-full p-2"
