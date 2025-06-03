@@ -33,7 +33,11 @@ export default function AddItemForm({
       setName(initialData.Name || '');
       setGame(initialData.Game || '');
       setFaction(initialData.Faction || '');
-      setStatus(initialData.Status || STATUS_OPTIONS[0]);
+      const statusValue =
+        initialData.Status && typeof initialData.Status === 'object'
+          ? initialData.Status.value
+          : initialData.Status;
+      setStatus(statusValue || STATUS_OPTIONS[0]);
       setQuantity(initialData.Quantity || 1);
       setNotes(initialData.Notes || '');
     }
